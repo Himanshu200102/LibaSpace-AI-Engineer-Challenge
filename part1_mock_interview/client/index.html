@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mock Interview - Demo</title>
+    <!-- Load LiveKit Client Library - Using specific version for reliability -->
+    <script>
+        let livekitScriptLoaded = false;
+        let livekitScriptError = false;
+        
+        // Try loading from unpkg first
+        const script1 = document.createElement('script');
+        script1.src = 'https://unpkg.com/livekit-client@2.5.4/dist/livekit-client.umd.js';
+        script1.onload = function() {
+            console.log('✓ LiveKit loaded from unpkg');
+            livekitScriptLoaded = true;
+            // Check all possible global names
+            const possibleNames = ['LiveKitClient', 'LivekitClient', 'livekit', 'LiveKit'];
+            for (const name of possibleNames) {
+                if (typeof window[name] !== 'undefined') {
+                    console.log(`✓ ${name} global variable available`);
+                    if (window[name].Room) {
+                        console.log(`✓ ${name}.Room is available`);
+                    }
+                }
+            }
+        };
+        script1.onerror = function() {
+            console.error('✗ Failed to load from unpkg, trying jsDelivr...');
+            loadLiveKitFromJsDelivr();
+        };
+        document.head.appendChild(script1);
+        
+        // Fallback to jsDelivr if unpkg fails
+        function loadLiveKitFromJsDelivr() {
+            const script2 = document.createElement('script');
+            script2.src = 'https://cdn.jsdelivr.net/npm/livekit-client@2.5.4/dist/livekit-client.umd.js';
+            script2.onload = function() {
+                console.log('✓ LiveKit loaded from jsDelivr');
+                livekitScriptLoaded = true;
+                // Check all possible global names
+                const possibleNames = ['LiveKitClient', 'LivekitClient', 'livekit', 'LiveKit'];
+                for (const name of possibleNames) {
+                    if (typeof window[name] !== 'undefined') {
+                        console.log(`✓ ${name} global variable available`);
+                        if (window[name].Room) {
+                            console.log(`✓ ${name}.Room is available`);
+                        }
+                    }
+                }
+            };
+            script2.onerror = function() {
+                console.error('✗ Failed to load from jsDelivr as well');
+                livekitScriptError = true;
+                document.getElementById('livekitLoadError')?.remove();
+                const errorDiv = document.createElement('div');
+                errorDiv.id = 'livekitLoadError';
+                errorDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #dc2626; color: white; padding: 15px 20px; border-radius: 8px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); max-width: 500px;';
+                errorDiv.innerHTML = '<strong>⚠️ Network Error:</strong> Failed to load LiveKit client library from CDN.<br><br>Possible solutions:<br>1. Check internet connection<br>2. Check browser console (F12) for details<br>3. Try refreshing the page<br>4. Check if CDN is blocked by firewall/adblocker';
+                document.body.appendChild(errorDiv);
+            };
+            document.head.appendChild(script2);
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #6b21a8;
+            box-shadow: 0 4px 20px rgba(107, 33, 168, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #a0a0a0;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .connection-panel {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .connection-panel h2 {
+            color: #a855f7;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #d0d0d0;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6b21a8 0%, #9333ea 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(107, 33, 168, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(107, 33, 168, 0.6);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(127, 29, 29, 0.4);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(127, 29, 29, 0.6);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.connected {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .status-indicator.disconnected {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        .status-indicator.connecting {
+            background: #f59e0b;
+            box-shadow: 0 0 10px #f59e0b;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .conversation-panel {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            min-height: 400px;
+        }
+
+        .conversation-panel h2 {
+            color: #a855f7;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            background: rgba(107, 33, 168, 0.2);
+            border-left: 3px solid #a855f7;
+            margin-left: 2rem;
+        }
+
+        .message.agent {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #ffffff;
+            margin-right: 2rem;
+        }
+
+        .message.system {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+            text-align: center;
+            font-style: italic;
+            color: #a0a0a0;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: #a0a0a0;
+        }
+
+        .message-content {
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .controls-panel {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls-panel h2 {
+            color: #a855f7;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .audio-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .audio-status {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .audio-status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .audio-status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .stage-indicator {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(107, 33, 168, 0.1);
+            border: 1px solid #6b21a8;
+            border-radius: 8px;
+        }
+
+        .stage-indicator h3 {
+            color: #a855f7;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stage-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #93c5fd;
+        }
+
+        .info-box strong {
+            color: #60a5fa;
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scrollbar styling */
+        .messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #6b21a8;
+            border-radius: 4px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #9333ea;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎤 AI Mock Interview Demo</h1>
+        <p>Professional AI-powered interview simulation with real-time voice interaction</p>
+    </div>
+
+    <div class="container">
+        <div class="main-panel">
+            <div class="connection-panel">
+                <h2>Connection Settings</h2>
+                <div class="form-group">
+                    <label>LiveKit URL</label>
+                    <input type="text" id="livekitUrl" placeholder="wss://your-livekit-server.com" value="">
+                </div>
+                <div class="form-group">
+                    <label>Room Name</label>
+                    <input type="text" id="roomName" placeholder="interview-room" value="interview-demo">
+                </div>
+                <div class="form-group">
+                    <label>Access Token</label>
+                    <input type="text" id="accessToken" placeholder="Paste your LiveKit access token here">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn btn-primary" id="connectBtn" onclick="connectToRoom()">Connect</button>
+                    <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectFromRoom()" disabled>Disconnect</button>
+                </div>
+                <div style="margin-top: 10px; padding: 10px; background: rgba(100,100,100,0.2); border-radius: 6px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                        <span id="sdkStatus" style="padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; background: rgba(100,100,100,0.3);">
+                            Checking SDK...
+                        </span>
+                        <button class="btn" onclick="checkSDKStatus()" style="padding: 5px 15px; font-size: 0.85rem; background: #3a3a5a; border: 1px solid #5a5a7a;">
+                            Check SDK
+                        </button>
+                    </div>
+                </div>
+                <div id="connectionStatus" style="margin-top: 1rem; color: #a0a0a0;">
+                    <span class="status-indicator disconnected"></span>
+                    <span>Disconnected</span>
+                </div>
+                <div class="error-message" id="errorMessage"></div>
+                <div class="info-box">
+                    <strong>Note:</strong> You need to generate an access token from your LiveKit dashboard. 
+                    The token should have permissions to join the room and publish/subscribe audio.
+                </div>
+            </div>
+
+            <div class="conversation-panel">
+                <h2>Conversation</h2>
+                <div class="messages" id="messages">
+                    <div class="message system">
+                        <div class="message-content">
+                            Welcome! Connect to start your mock interview. The AI interviewer will guide you through 
+                            self-introduction and past experience discussion stages.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <h2>Controls</h2>
+            <div class="audio-controls">
+                <div class="audio-status">
+                    <div class="audio-status-item">
+                        <span>Microphone:</span>
+                        <span id="micStatus">Not enabled</span>
+                    </div>
+                    <div class="audio-status-item">
+                        <span>Speaker:</span>
+                        <span id="speakerStatus">Not enabled</span>
+                    </div>
+                    <div class="audio-status-item">
+                        <span>Connection:</span>
+                        <span id="connectionStatusText">Disconnected</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="toggleMicBtn" onclick="toggleMicrophone()" disabled>
+                    Enable Microphone
+                </button>
+            </div>
+
+            <div class="stage-indicator">
+                <h3>Current Stage</h3>
+                <div class="stage-name" id="currentStage">Not Started</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let room = null;
+        let localAudioTrack = null;
+        let isMicEnabled = false;
+        let isConnected = false;
+        let LiveKitSDK = null;
+
+        // Wait for LiveKit SDK to load
+        function waitForLiveKit() {
+            return new Promise((resolve, reject) => {
+                // Check multiple possible global variable names
+                const possibleNames = [
+                    'LiveKitClient',
+                    'LivekitClient',  // lowercase 'k' variant
+                    'livekit',
+                    'LiveKit'
+                ];
+                
+                function checkSDK() {
+                    for (const name of possibleNames) {
+                        const sdk = window[name];
+                        if (typeof sdk !== 'undefined' && sdk.Room) {
+                            return sdk;
+                        }
+                    }
+                    return null;
+                }
+                
+                // Check immediately
+                const sdk = checkSDK();
+                if (sdk) {
+                    console.log('Found LiveKit SDK:', sdk);
+                    resolve(sdk);
+                    return;
+                }
+                
+                let attempts = 0;
+                const maxAttempts = 100; // 10 seconds
+                const interval = setInterval(() => {
+                    attempts++;
+                    
+                    const foundSDK = checkSDK();
+                    if (foundSDK) {
+                        clearInterval(interval);
+                        console.log('Found LiveKit SDK after', attempts * 100, 'ms');
+                        resolve(foundSDK);
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(interval);
+                        // Check what globals are available
+                        const available = possibleNames.filter(name => typeof window[name] !== 'undefined');
+                        const errorMsg = available.length > 0
+                            ? `LiveKit SDK found but Room class not available. Available: ${available.join(', ')}`
+                            : 'LiveKit SDK not found. Check browser console and network tab.';
+                        reject(new Error(errorMsg));
+                    }
+                }, 100);
+            });
+        }
+
+        // Function to check and update SDK status
+        function updateSDKStatus() {
+            const statusEl = document.getElementById('sdkStatus');
+            if (!statusEl) return;
+            
+            // Check multiple possible global names
+            const possibleNames = ['LiveKitClient', 'LivekitClient', 'livekit', 'LiveKit'];
+            let foundSDK = null;
+            
+            for (const name of possibleNames) {
+                const sdk = window[name];
+                if (typeof sdk !== 'undefined' && sdk.Room) {
+                    foundSDK = sdk;
+                    break;
+                }
+            }
+            
+            if (foundSDK || LiveKitSDK) {
+                statusEl.textContent = '✓ SDK Loaded';
+                statusEl.style.background = 'rgba(34, 197, 94, 0.3)';
+                statusEl.style.color = '#86efac';
+            } else {
+                statusEl.textContent = '✗ SDK Not Loaded';
+                statusEl.style.background = 'rgba(239, 68, 68, 0.3)';
+                statusEl.style.color = '#fca5a5';
+            }
+        }
+        
+        // Function to manually check SDK status
+        async function checkSDKStatus() {
+            console.log('=== SDK Status Check ===');
+            const possibleNames = ['LiveKitClient', 'LivekitClient', 'livekit', 'LiveKit'];
+            
+            for (const name of possibleNames) {
+                const sdk = window[name];
+                console.log(`${name} type:`, typeof sdk);
+                if (typeof sdk !== 'undefined') {
+                    console.log(`${name} keys:`, Object.keys(sdk).slice(0, 10));
+                    console.log(`${name} has Room?`, typeof sdk.Room);
+                }
+            }
+            console.log('LiveKitSDK:', LiveKitSDK);
+            
+            // Try to load if not loaded
+            if (!LiveKitSDK) {
+                try {
+                    LiveKitSDK = await waitForLiveKit();
+                    console.log('✓ SDK loaded successfully:', LiveKitSDK);
+                    updateSDKStatus();
+                    hideError();
+                } catch (error) {
+                    console.error('✗ Failed to load SDK:', error);
+                    updateSDKStatus();
+                    showError('SDK Check: ' + error.message);
+                }
+            } else {
+                console.log('✓ SDK already loaded');
+                updateSDKStatus();
+            }
+        }
+
+        // Initialize LiveKit SDK when page loads
+        window.addEventListener('load', async () => {
+            console.log('Page loaded, waiting for LiveKit SDK...');
+            updateSDKStatus();
+            
+            try {
+                LiveKitSDK = await waitForLiveKit();
+                console.log('LiveKit SDK loaded successfully:', LiveKitSDK);
+                updateSDKStatus();
+                hideError();
+            } catch (error) {
+                console.error('Failed to load LiveKit SDK:', error);
+                console.error('Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('livekit')));
+                updateSDKStatus();
+                showError('Failed to load LiveKit client library: ' + error.message + '. Click "Check SDK" button to retry.');
+            }
+        });
+        
+        // Also try to load immediately if script is already loaded
+        const possibleNames = ['LiveKitClient', 'LivekitClient', 'livekit', 'LiveKit'];
+        for (const name of possibleNames) {
+            const sdk = window[name];
+            if (typeof sdk !== 'undefined' && sdk.Room) {
+                LiveKitSDK = sdk;
+                console.log(`LiveKit SDK already available as ${name}`);
+                updateSDKStatus();
+                break;
+            }
+        }
+        
+        // Update status periodically
+        setInterval(updateSDKStatus, 2000);
+
+        async function connectToRoom() {
+            const url = document.getElementById('livekitUrl').value.trim();
+            const roomName = document.getElementById('roomName').value.trim();
+            const token = document.getElementById('accessToken').value.trim();
+
+            if (!url || !roomName || !token) {
+                showError('Please fill in all connection fields');
+                return;
+            }
+
+            // Ensure LiveKit SDK is loaded
+            if (!LiveKitSDK) {
+                try {
+                    LiveKitSDK = await waitForLiveKit();
+                } catch (error) {
+                    showError('LiveKit client library not loaded. Please refresh the page.');
+                    return;
+                }
+            }
+
+            const { Room, RoomEvent, RemoteParticipant, Track, TrackPublication } = LiveKitSDK;
+
+            try {
+                updateConnectionStatus('connecting', 'Connecting...');
+                document.getElementById('connectBtn').disabled = true;
+                hideError();
+
+                room = new Room({
+                    adaptiveStream: true,
+                    dynacast: true,
+                });
+
+                // Set up event handlers
+                room.on(RoomEvent.Connected, () => {
+                    isConnected = true;
+                    updateConnectionStatus('connected', 'Connected');
+                    addSystemMessage('Successfully connected to interview room');
+                    addSystemMessage('Waiting for AI interviewer to join... (agent dispatch configured in token)');
+                    document.getElementById('connectBtn').disabled = true;
+                    document.getElementById('disconnectBtn').disabled = false;
+                    document.getElementById('toggleMicBtn').disabled = false;
+                });
+
+                room.on(RoomEvent.Disconnected, () => {
+                    isConnected = false;
+                    updateConnectionStatus('disconnected', 'Disconnected');
+                    addSystemMessage('Disconnected from interview room');
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = true;
+                    document.getElementById('toggleMicBtn').disabled = true;
+                    isMicEnabled = false;
+                    updateMicButton();
+                });
+
+                room.on(RoomEvent.ParticipantConnected, (participant) => {
+                    if (participant instanceof RemoteParticipant) {
+                        addSystemMessage(`AI Interviewer joined the room`);
+                        updateStage('AI Interviewer Connected');
+                    }
+                });
+
+                room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+                    if (track.kind === 'audio') {
+                        const audioElement = track.attach();
+                        audioElement.autoplay = true;
+                        audioElement.play();
+                        document.getElementById('speakerStatus').textContent = 'Active';
+                        addSystemMessage('AI Interviewer audio connected');
+                    }
+                });
+
+                room.on(RoomEvent.TrackUnsubscribed, (track) => {
+                    track.detach();
+                    if (track.kind === 'audio') {
+                        document.getElementById('speakerStatus').textContent = 'Not enabled';
+                    }
+                });
+
+                // Connect to room
+                await room.connect(url, token);
+                
+                // Enable microphone by default
+                await enableMicrophone();
+
+            } catch (error) {
+                console.error('Connection error:', error);
+                showError(`Connection failed: ${error.message}`);
+                updateConnectionStatus('disconnected', 'Connection Failed');
+                document.getElementById('connectBtn').disabled = false;
+            }
+        }
+
+        async function disconnectFromRoom() {
+            if (room) {
+                if (localAudioTrack) {
+                    await room.localParticipant.unpublishTrack(localAudioTrack);
+                    localAudioTrack.stop();
+                    localAudioTrack = null;
+                }
+                await room.disconnect();
+                room = null;
+            }
+            isMicEnabled = false;
+            updateMicButton();
+        }
+
+        async function enableMicrophone() {
+            try {
+                if (!room || !isConnected) {
+                    showError('Not connected to room');
+                    return;
+                }
+
+                if (!localAudioTrack) {
+                    localAudioTrack = await room.localParticipant.setMicrophoneEnabled(true);
+                    isMicEnabled = true;
+                    document.getElementById('micStatus').textContent = 'Active';
+                    updateMicButton();
+                    addSystemMessage('Microphone enabled - You can now speak');
+                }
+            } catch (error) {
+                console.error('Microphone error:', error);
+                showError(`Microphone error: ${error.message}`);
+            }
+        }
+
+        async function disableMicrophone() {
+            try {
+                if (localAudioTrack) {
+                    await room.localParticipant.setMicrophoneEnabled(false);
+                    localAudioTrack.stop();
+                    localAudioTrack = null;
+                    isMicEnabled = false;
+                    document.getElementById('micStatus').textContent = 'Not enabled';
+                    updateMicButton();
+                    addSystemMessage('Microphone disabled');
+                }
+            } catch (error) {
+                console.error('Microphone error:', error);
+                showError(`Microphone error: ${error.message}`);
+            }
+        }
+
+        async function toggleMicrophone() {
+            if (isMicEnabled) {
+                await disableMicrophone();
+            } else {
+                await enableMicrophone();
+            }
+        }
+
+        function updateMicButton() {
+            const btn = document.getElementById('toggleMicBtn');
+            if (isMicEnabled) {
+                btn.textContent = 'Disable Microphone';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-danger');
+            } else {
+                btn.textContent = 'Enable Microphone';
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-primary');
+            }
+        }
+
+        function updateConnectionStatus(status, text) {
+            const indicator = document.querySelector('.status-indicator');
+            const statusText = document.getElementById('connectionStatusText');
+            
+            indicator.className = `status-indicator ${status}`;
+            document.querySelector('#connectionStatus span:last-child').textContent = text;
+            if (statusText) {
+                statusText.textContent = text;
+            }
+        }
+
+        function addMessage(sender, content, isSystem = false) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isSystem ? 'system' : sender}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span><strong>${sender === 'user' ? 'You' : 'AI Interviewer'}</strong></span>
+                    <span>${timestamp}</span>
+                </div>
+                <div class="message-content">${content}</div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addSystemMessage(content) {
+            addMessage('system', content, true);
+        }
+
+        function updateStage(stageName) {
+            document.getElementById('currentStage').textContent = stageName;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+
+        // Load saved values from localStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUrl = localStorage.getItem('livekitUrl');
+            const savedRoom = localStorage.getItem('roomName');
+            
+            if (savedUrl) document.getElementById('livekitUrl').value = savedUrl;
+            if (savedRoom) document.getElementById('roomName').value = savedRoom;
+        });
+
+        // Save values to localStorage
+        document.getElementById('livekitUrl').addEventListener('change', (e) => {
+            localStorage.setItem('livekitUrl', e.target.value);
+        });
+
+        document.getElementById('roomName').addEventListener('change', (e) => {
+            localStorage.setItem('roomName', e.target.value);
+        });
+    </script>
+</body>
+</html>
+

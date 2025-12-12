@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveKit Token Generator</title>
+    <!-- Using Web Crypto API for JWT signing - no external library needed -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #a855f7;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            color: #d0d0d0;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 0.95rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #6b21a8 0%, #9333ea 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(107, 33, 168, 0.6);
+        }
+
+        .token-output {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            border-radius: 8px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .token-output.show {
+            display: block;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #93c5fd;
+        }
+
+        .copy-btn {
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(107, 33, 168, 0.3);
+            color: #a855f7;
+            border: 1px solid #6b21a8;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .copy-btn:hover {
+            background: rgba(107, 33, 168, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 LiveKit Token Generator</h1>
+        <p style="color: #a0a0a0; margin-bottom: 1.5rem;">
+            Generate an access token for testing the interview client
+        </p>
+
+        <div class="form-group">
+            <label>LiveKit API Key</label>
+            <input type="text" id="apiKey" placeholder="Your LiveKit API Key">
+        </div>
+
+        <div class="form-group">
+            <label>LiveKit API Secret</label>
+            <input type="password" id="apiSecret" placeholder="Your LiveKit API Secret">
+        </div>
+
+        <div class="form-group">
+            <label>Room Name</label>
+            <input type="text" id="roomName" placeholder="interview-demo" value="interview-demo">
+        </div>
+
+        <div class="form-group">
+            <label>Participant Name</label>
+            <input type="text" id="participantName" placeholder="Candidate" value="Candidate">
+        </div>
+
+        <button class="btn" onclick="generateToken()">Generate Token</button>
+
+        <div class="token-output" id="tokenOutput">
+            <strong style="color: #a855f7;">Generated Token:</strong>
+            <div id="tokenText" style="margin-top: 0.5rem; color: #ffffff;"></div>
+            <button class="copy-btn" onclick="copyToken()">Copy Token</button>
+        </div>
+
+        <div class="info-box">
+            <strong>Note:</strong> This generates a token client-side for testing only. 
+            In production, tokens should be generated server-side for security.
+            The token will be valid for 6 hours.
+        </div>
+    </div>
+
+    <script>
+        // Generate LiveKit JWT token using jose library
+        async function generateToken() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const apiSecret = document.getElementById('apiSecret').value.trim();
+            const roomName = document.getElementById('roomName').value.trim();
+            const participantName = document.getElementById('participantName').value.trim() || 'Candidate';
+
+            if (!apiKey || !apiSecret || !roomName) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                // Use Web Crypto API directly (available in all modern browsers)
+                const jwt = await generateJWTManually(
+                    apiKey,
+                    apiSecret,
+                    participantName,
+                    roomName
+                );
+                document.getElementById('tokenText').textContent = jwt;
+                document.getElementById('tokenOutput').classList.add('show');
+            } catch (error) {
+                alert('Error generating token: ' + error.message);
+                console.error('Full error:', error);
+            }
+        }
+
+        // JWT generation using Web Crypto API (no external library needed)
+        async function generateJWTManually(apiKey, apiSecret, participantName, roomName) {
+            const now = Math.floor(Date.now() / 1000);
+            const exp = now + (6 * 60 * 60);
+
+            const header = {
+                alg: 'HS256',
+                typ: 'JWT'
+            };
+
+            const payload = {
+                iss: apiKey,
+                sub: participantName,
+                exp: exp,
+                nbf: now - 10,
+                video: {
+                    room: roomName,
+                    roomJoin: true,
+                    canPublish: true,
+                    canSubscribe: true,
+                    canPublishData: true,
+                    canSubscribeData: true,
+                    canPublishSources: ['camera', 'microphone', 'screen_share'],
+                    hidden: false,
+                    recorder: false
+                },
+                // Room configuration with agent dispatch
+                // This will automatically dispatch the agent when participant connects
+                // According to LiveKit protocol, room config should be at top level
+                room: {
+                    agents: [
+                        {
+                            agent_name: "interview-agent",  // Protocol uses snake_case
+                            metadata: JSON.stringify({ participant: participantName })
+                        }
+                    ]
+                }
+            };
+
+            // Base64 URL encode (handles Unicode properly)
+            function base64UrlEncode(str) {
+                // Convert string to UTF-8 bytes, then to base64
+                const utf8Bytes = new TextEncoder().encode(str);
+                let binary = '';
+                for (let i = 0; i < utf8Bytes.length; i++) {
+                    binary += String.fromCharCode(utf8Bytes[i]);
+                }
+                return btoa(binary)
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=/g, '');
+            }
+
+            const encodedHeader = base64UrlEncode(JSON.stringify(header));
+            const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+
+            const data = `${encodedHeader}.${encodedPayload}`;
+            const secretBytes = new TextEncoder().encode(apiSecret);
+
+            // Import key for HMAC
+            const key = await crypto.subtle.importKey(
+                'raw',
+                secretBytes,
+                { name: 'HMAC', hash: 'SHA-256' },
+                false,
+                ['sign']
+            );
+
+            // Sign
+            const signature = await crypto.subtle.sign(
+                'HMAC',
+                key,
+                new TextEncoder().encode(data)
+            );
+
+            // Convert signature to base64url
+            const signatureArray = Array.from(new Uint8Array(signature));
+            const signatureBase64 = btoa(String.fromCharCode(...signatureArray))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '');
+
+            return `${data}.${signatureBase64}`;
+        }
+
+        function copyToken() {
+            const tokenText = document.getElementById('tokenText').textContent;
+            navigator.clipboard.writeText(tokenText).then(() => {
+                alert('Token copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+    </script>
+</body>
+</html>
+
