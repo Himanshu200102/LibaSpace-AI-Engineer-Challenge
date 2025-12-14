@@ -28,6 +28,14 @@ The architecture is designed for production use, with robust error handling, com
 - High-quality TTS with multiple voice options
 - Professional web client included for testing and demos
 
+## Demo Video
+
+See the system in action:
+
+📹 **Demo Video**: [Watch on Google Drive](https://drive.google.com/file/d/1NBLbIQG-rShZSz7luOxgNT0d6XuCiu4d/view?usp=sharing)
+
+---
+
 ## Architecture
 
 The system is built on LiveKit Agents framework, which provides the infrastructure for real-time voice AI applications. Here's how the components work together:

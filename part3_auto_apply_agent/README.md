@@ -6,6 +6,14 @@ An automated system that fills out and submits job applications on ATS platforms
 
 Instead of manually filling out the same information across dozens of job applications, this agent does it for you. It reads job postings, fills out forms intelligently, handles various question types, and submits applications - all while solving CAPTCHA challenges automatically.
 
+## Demo Video
+
+See the system in action:
+
+📹 **Demo Video**: [Watch on Google Drive](https://drive.google.com/file/d/162UftMPiaIUfiaTpnDM-2kd3nM413qPL/view?usp=sharing)
+
+---
+
 ## Quick Start
 
 ### Prerequisites

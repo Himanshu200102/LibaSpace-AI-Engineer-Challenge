@@ -12,6 +12,15 @@ Both work end-to-end and are structured so you can actually deploy and use them,
 
 ---
 
+## Demo Videos
+
+Watch the systems in action:
+
+- **AI Mock Interview Demo**: [Watch on Google Drive](https://drive.google.com/file/d/1NBLbIQG-rShZSz7luOxgNT0d6XuCiu4d/view?usp=sharing)
+- **Auto-Apply Agent Demo**: [Watch on Google Drive](https://drive.google.com/file/d/162UftMPiaIUfiaTpnDM-2kd3nM413qPL/view?usp=sharing)
+
+---
+
 ## Part 1: AI Mock Interview System
 
 A voice interview system built with LiveKit. You can actually have a conversation with it—it conducts structured interviews with real-time voice interaction.
