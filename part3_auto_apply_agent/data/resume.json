@@ -1,0 +1,70 @@
+{
+  "personal_info": {
+    "full_name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1-555-123-4567",
+    "location": "New York, NY",
+    "linkedin": "https://linkedin.com/in/johndoe",
+    "website": "https://johndoe.dev"
+  },
+  "experience": [
+    {
+      "company": "Tech Corp",
+      "position": "Data Scientist",
+      "start_date": "2022-01",
+      "end_date": "2024-12",
+      "current": true,
+      "responsibilities": [
+        "Developed machine learning models for business insights",
+        "Analyzed marketing effectiveness using Python and R",
+        "Collaborated with cross-functional teams"
+      ],
+      "skills": ["Python", "R", "Machine Learning", "Data Analysis"]
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of Technology",
+      "degree": "Bachelor of Science in Computer Science",
+      "graduation_year": 2022
+    }
+  ],
+  "skills": {
+    "programming_languages": ["Python", "R", "SQL"],
+    "technologies": ["Machine Learning", "Data Science", "Marketing Analytics"],
+    "languages": ["English", "French"]
+  },
+  "notice_period": "2 weeks",
+  "visa_status": "Authorized to work in US",
+  "salary_expectations": {
+    "min": 80000,
+    "max": 100000,
+    "currency": "USD"
+  },
+  "application_preferences": {
+    "diversity_fields": {
+      "gender": "Prefer not to say",
+      "ethnicity": "Prefer not to say",
+      "race": "Prefer not to say",
+      "age_bracket": "Prefer not to say",
+      "veteran_status": "Prefer not to say",
+      "disability_status": "Prefer not to say",
+      "default": "Prefer not to say"
+    },
+    "common_questions": {
+      "how_did_you_hear": "Job board",
+      "start_date_preference": "2 weeks notice",
+      "available_immediately": "Yes",
+      "open_to_relocation": "No",
+      "open_to_remote": "Yes",
+      "require_visa_sponsorship": "No",
+      "authorized_to_work": "Yes"
+    },
+    "consent_preferences": {
+      "auto_check_consent": true,
+      "auto_check_terms": true,
+      "auto_check_privacy": true
+    }
+  }
+}
+

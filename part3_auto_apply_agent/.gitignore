@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Browser
+chrome_profile/
+*.log
+
+# Application results
+application_result_*.json
+
+# Resume files (keep structure, ignore actual files)
+data/*.pdf
+data/*.docx
+data/*.doc
+
+# OS
+.DS_Store
+Thumbs.db
+
